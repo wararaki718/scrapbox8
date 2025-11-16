@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-
-class DiversityReranker:
+# personalized fairness-aware
+class PfarReranker:
     def compute(self, rating_df: pd.DataFrame, movie_df: pd.DataFrame) -> None:
         """
         Precompute tau values for each user based on their rating history.
@@ -59,10 +59,13 @@ class DiversityReranker:
                 if movie_id in result:
                     continue
 
-                provider = movie2provider[movie_id]
+                provider = movie2provider.get(movie_id, "Unknown")
                 base_score = movie_scores.get(movie_id, 0.0)
+
+                # calculate diversity bonus
                 diversity_bonus = 1.0 if provider not in selected_providers else 0.0
 
+                # calculate final score
                 score = base_score + lambda_ * tau * diversity_bonus
     
                 if score > best_score:
