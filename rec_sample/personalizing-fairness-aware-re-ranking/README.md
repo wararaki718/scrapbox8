@@ -3,7 +3,7 @@
 ## setup
 
 ```shell
-pip install pandas scikit-learn numpy lightfm
+pip install pandas scikit-learn numpy
 ```
 
 ## run
