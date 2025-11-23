@@ -24,7 +24,11 @@ class DiversityAwareDPPBasedTripletLoss(nn.Module):
         basic_loss = self.triplet_loss(anchor, positive, negative)
 
         # Compute DPP-based diversity regularization
-        pos_similarity = torch.matmul(positive, positive.t())
+        pos_similarity = torch.cosine_similarity(
+            positive.unsqueeze(1),
+            positive.unsqueeze(0),
+            dim=2,
+        )
 
         # positive samples diversity
         identity = torch.eye(pos_similarity.size(0)).to(pos_similarity.device)

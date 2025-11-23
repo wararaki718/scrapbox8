@@ -1,4 +1,4 @@
-# two-tower model with mrr rerank
+# two-tower model with dpp rerank
 
 ## setup
 
