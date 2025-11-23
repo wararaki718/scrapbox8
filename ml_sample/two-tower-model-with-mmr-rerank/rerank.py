@@ -4,6 +4,7 @@ import torch
 class MRRReranker:
     def __init__(self, lambda_: float=0.5) -> None:
         self._lambda = lambda_
+
     def rerank(
         self,
         relevance_scores: torch.Tensor,
