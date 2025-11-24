@@ -1,4 +1,4 @@
-# two-tower model with dpp
+# two-tower model with correlation-penalty
 
 ## setup
 
@@ -10,10 +10,4 @@ pip install torch lightning
 
 ```shell
 python main.py
-```
-
-optional
-
-```shell
-PYTORCH_ENABLE_MPS_FALLBACK=1 python main.py
 ```

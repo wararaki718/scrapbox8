@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 
 
-# dpp based loss
 class DiversityCorrelationPenaltyBasedTripletLoss(nn.Module):
     def __init__(self, margin: float=1.0, lambda_: float=0.001) -> None:
         super().__init__()
