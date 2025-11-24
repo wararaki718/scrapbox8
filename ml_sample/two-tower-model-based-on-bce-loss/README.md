@@ -12,8 +12,7 @@ pip install torch lightning
 python main.py
 ```
 
-optional
+## appendix
 
-```shell
-PYTORCH_ENABLE_MPS_FALLBACK=1 python main.py
-```
+pairwise dataset に対して有効。
+triplet dataset は無理矢理実装している。
