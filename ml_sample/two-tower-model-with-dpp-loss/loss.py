@@ -6,7 +6,6 @@ import torch.nn as nn
 class DiversityAwareDPPBasedTripletLoss(nn.Module):
     def __init__(self, margin: float=1.0, dpp_lambda: float=0.5, epsilon: float=1e-5) -> None:
         super().__init__()
-        self.margin = margin
         self.dpp_lambda = dpp_lambda
         self.epsilon = epsilon
         self.triplet_loss = nn.TripletMarginWithDistanceLoss(
