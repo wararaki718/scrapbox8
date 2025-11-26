@@ -1,4 +1,4 @@
-# two-tower model with infonce (triplet)
+# two-tower model with bce-loss
 
 ## setup
 

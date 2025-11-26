@@ -17,9 +17,10 @@ class BCETripletLoss(nn.Module):
             torch.ones(anchor.size(0), device=anchor.device),
             torch.zeros(negative.size(0), device=negative.device),
         ))
-        predictions = torch.cat((
-            torch.cosine_similarity(anchor, positive, dim=1),
-            torch.cosine_similarity(anchor, negative, dim=1),
-        ))
+        predictions = torch.cosine_similarity(
+            torch.cat([anchor, anchor], dim=0),
+            torch.cat([positive, negative], dim=0),
+            dim=1,
+        )
         loss = self.criterion(predictions, labels)
         return loss

@@ -1,4 +1,4 @@
-# two-tower model with infonce (triplet)
+# two-tower model with info-nce loss (pairwise)
 
 ## setup
 
