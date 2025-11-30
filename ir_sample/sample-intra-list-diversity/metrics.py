@@ -29,4 +29,4 @@ def compute_intra_list_diversity(embeddings: torch.Tensor) -> float:
     # calculate ild score
     ild_score = distance_matrix[mask].sum() / (distance_matrix.size(0) * (distance_matrix.size(0) - 1))
 
-    return ild_score
+    return ild_score.item()
