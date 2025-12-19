@@ -3,7 +3,7 @@
 ## setup
 
 ```shell
-pip install torch lighting
+pip install torch lightning
 ```
 
 ## run

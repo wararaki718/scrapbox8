@@ -41,8 +41,7 @@ class TwoTowerModel(LightningModule):
         super().__init__()
         self._query_encoder = query_encoder
         self._document_encoder = document_encoder
-        self._criterion = nn.TripletMarginWithDistanceLoss(
-            distance_function=lambda x, y: 1.0 - torch.cosine_similarity(x, y),
+        self._criterion = nn.CosineEmbeddingLoss(
             margin=1.0,
         )
 
