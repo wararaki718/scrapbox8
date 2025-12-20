@@ -4,13 +4,17 @@ from .document import (
     LateFusionDocumentTower,
 )
 from .model import TwoTowerModel
-from .query import QueryTower
+from .query import (
+    GatedQueryTower,
+    QueryTower,
+)
 
 
 __all__ = [
     "EarlyFusionDocumentTower",
     "IntermediateFusionDocumentTower",
     "LateFusionDocumentTower",
+    "GatedQueryTower",
     "QueryTower",
     "TwoTowerModel",
 ]
