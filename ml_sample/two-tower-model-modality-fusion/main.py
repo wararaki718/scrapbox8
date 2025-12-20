@@ -3,7 +3,13 @@ from torch.utils.data import DataLoader
 
 from collator import MultiModalCollator
 from dataset import MultiModalDataset
-from model import TwoTowerModel, MultiModalTower
+from models import (
+    EarlyFusionDocumentTower,
+    IntermediateFusionDocumentTower,
+    LateFusionDocumentTower,
+    QueryTower,
+    TwoTowerModel,
+)
 from utils import load_dummy_data
 
 
@@ -29,8 +35,10 @@ def main() -> None:
     )
 
     # モデルの初期化
-    query_encoder = MultiModalTower(input_dims=query_modality_dims, output_dim=128)
-    document_encoder = MultiModalTower(input_dims=document_modality_dims, output_dim=128)
+    query_encoder = QueryTower(input_dims=query_modality_dims, output_dim=128)
+    # document_encoder = EarlyFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
+    # document_encoder = IntermediateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
+    document_encoder = LateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
     model = TwoTowerModel(query_encoder=query_encoder, document_encoder=document_encoder)
     trainer = Trainer(max_epochs=5, log_every_n_steps=5)
     trainer.fit(model=model, train_dataloaders=data_loader)

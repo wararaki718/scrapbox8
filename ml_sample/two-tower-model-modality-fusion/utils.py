@@ -17,6 +17,9 @@ def get_document_modalities(n: int=100) -> tuple[dict[str, torch.Tensor], dict[s
         "title": torch.randn(n, 128),
         "body": torch.randn(n, 128),
         "metadata": torch.randn(n, 128),
+        "image": torch.randn(n, 128),
+        "interaction_history": torch.randn(n, 128),
+        "tags": torch.randn(n, 128),
     }
     modality_dims = {name: tensor.size(1) for name, tensor in modalities.items()}
     return modalities, modality_dims
