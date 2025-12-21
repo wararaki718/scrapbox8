@@ -24,7 +24,6 @@ def main() -> None:
         query_modality_dims,
         document_modality_dims,
     ) = load_dummy_data(n_data=100)
-
     data_loader = DataLoader(
         dataset,
         batch_size=16,
@@ -48,8 +47,7 @@ def main() -> None:
         _,
         _,
     ) = load_dummy_data(n_data=10)
-
-    data_loader = DataLoader(
+    test_loader = DataLoader(
         dataset,
         batch_size=10,
         shuffle=False,
@@ -59,7 +57,7 @@ def main() -> None:
     print("### Gate Weights ###")
     model.eval()
     all_gate_weights = []
-    for batch in data_loader:
+    for batch in test_loader:
         x_query, _, _ = batch
         gate_weights = model.query_encoder.get_gate_weights(x_query)
         all_gate_weights.append(gate_weights)
@@ -78,7 +76,7 @@ def main() -> None:
     print("### Attention Maps ###")
     model.eval()
     all_attention_maps = []
-    for batch in data_loader:
+    for batch in test_loader:
         x_query, _, _ = batch
         attention_map = model.query_encoder.get_attention_map(x_query)
         all_attention_maps.append(attention_map)
