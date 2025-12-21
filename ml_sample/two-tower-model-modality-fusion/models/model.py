@@ -11,8 +11,8 @@ class TwoTowerModel(LightningModule):
             document_encoder: nn.Module,
         ) -> None:
         super().__init__()
-        self._query_encoder = query_encoder
-        self._document_encoder = document_encoder
+        self.query_encoder = query_encoder
+        self.document_encoder = document_encoder
         self._criterion = nn.CosineEmbeddingLoss(
             margin=1.0,
         )
@@ -24,8 +24,8 @@ class TwoTowerModel(LightningModule):
         batch_idx: int,
     ) -> torch.Tensor:
         x_query, x_document, y = batch
-        query_embeddings = self._query_encoder(x_query)
-        document_embeddings = self._document_encoder(x_document)
+        query_embeddings = self.query_encoder(x_query)
+        document_embeddings = self.document_encoder(x_document)
 
         query_optimizer, document_optimizer = self.optimizers()
         query_optimizer.zero_grad()
@@ -41,6 +41,6 @@ class TwoTowerModel(LightningModule):
         return loss
 
     def configure_optimizers(self) -> tuple[Optimizer, Optimizer]:
-        query_optimizer = torch.optim.Adam(self._query_encoder.parameters(), lr=1e-3)
-        document_optimizer = torch.optim.Adam(self._document_encoder.parameters(), lr=1e-3)
+        query_optimizer = torch.optim.Adam(self.query_encoder.parameters(), lr=1e-3)
+        document_optimizer = torch.optim.Adam(self.document_encoder.parameters(), lr=1e-3)
         return query_optimizer, document_optimizer

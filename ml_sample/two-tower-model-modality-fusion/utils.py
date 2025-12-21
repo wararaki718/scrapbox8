@@ -1,7 +1,9 @@
 import torch
 
+from dataset import MultiModalDataset
 
-def get_query_modalities(n: int=100) -> tuple[dict[str, torch.Tensor], dict[str, int]]:
+
+def _get_query_modalities(n: int=100) -> tuple[dict[str, torch.Tensor], dict[str, int]]:
     modalities = {
         "keyword": torch.randn(n, 128),
         "condition": torch.randn(n, 128),
@@ -12,7 +14,7 @@ def get_query_modalities(n: int=100) -> tuple[dict[str, torch.Tensor], dict[str,
     return modalities, modality_dims
 
 
-def get_document_modalities(n: int=100) -> tuple[dict[str, torch.Tensor], dict[str, int]]:
+def _get_document_modalities(n: int=100) -> tuple[dict[str, torch.Tensor], dict[str, int]]:
     modalities = {
         "title": torch.randn(n, 128),
         "body": torch.randn(n, 128),
@@ -25,17 +27,23 @@ def get_document_modalities(n: int=100) -> tuple[dict[str, torch.Tensor], dict[s
     return modalities, modality_dims
 
 
-def get_labels(n: int=100) -> torch.Tensor:
+def _get_labels(n: int=100) -> torch.Tensor:
     return torch.randint(0, 2, (n,), dtype=torch.float32)
 
 
 def load_dummy_data(n_data: int=100) -> tuple[
-    tuple[dict[str, torch.Tensor], dict[str, int]],
-    tuple[dict[str, torch.Tensor], dict[str, int]],
-    torch.Tensor,
+    MultiModalDataset,
+    dict[str, int],
+    dict[str, int],
 ]:
-    query_modalities, query_modality_dims = get_query_modalities(n_data)
-    document_modalities, document_modality_dims = get_document_modalities(n_data)
-    labels = get_labels(n_data)
+    query_modalities, query_modality_dims = _get_query_modalities(n_data)
+    document_modalities, document_modality_dims = _get_document_modalities(n_data)
+    labels = _get_labels(n_data)
 
-    return query_modalities, query_modality_dims, document_modalities, document_modality_dims, labels
+    dataset = MultiModalDataset(
+        query_modalities=query_modalities,
+        document_modalities=document_modalities,
+        labels=labels,
+    )
+
+    return dataset, query_modality_dims, document_modality_dims

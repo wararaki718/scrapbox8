@@ -3,7 +3,7 @@
 ## setup
 
 ```shell
-pip install torch lightning
+pip install torch lightning pandas
 ```
 
 ## run
