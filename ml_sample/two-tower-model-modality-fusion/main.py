@@ -4,7 +4,6 @@ from lightning import Trainer
 from torch.utils.data import DataLoader
 
 from collator import MultiModalCollator
-from dataset import MultiModalDataset
 from models import (
     AttentionQueryTower,
     EarlyFusionDocumentTower,
@@ -30,18 +29,7 @@ def main() -> None:
         shuffle=True,
         collate_fn=MultiModalCollator().collate,
     )
-
-    # モデルの初期化
-    # query_encoder = QueryTower(input_dims=query_modality_dims, output_dim=128)
-    query_encoder = GatedQueryTower(input_dims=query_modality_dims, output_dim=128)
-    # document_encoder = EarlyFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
-    document_encoder = IntermediateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
-    # document_encoder = LateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
-    model = TwoTowerModel(query_encoder=query_encoder, document_encoder=document_encoder)
-    trainer = Trainer(max_epochs=5, log_every_n_steps=5)
-    trainer.fit(model=model, train_dataloaders=data_loader)
-
-    # ゲートの重みを表示
+    # test data
     (
         dataset,
         _,
@@ -53,6 +41,16 @@ def main() -> None:
         shuffle=False,
         collate_fn=MultiModalCollator().collate,
     )
+
+    # Gate
+    # query_encoder = QueryTower(input_dims=query_modality_dims, output_dim=128)
+    query_encoder = GatedQueryTower(input_dims=query_modality_dims, output_dim=128)
+    # document_encoder = EarlyFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
+    document_encoder = IntermediateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
+    # document_encoder = LateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
+    model = TwoTowerModel(query_encoder=query_encoder, document_encoder=document_encoder)
+    trainer = Trainer(max_epochs=5, log_every_n_steps=5)
+    trainer.fit(model=model, train_dataloaders=data_loader)
 
     print("### Gate Weights ###")
     model.eval()
@@ -66,7 +64,7 @@ def main() -> None:
         print(f"Modality: {name}, Gate weight: {weight.item():.4f}")
     print()
 
-    # Attentionの重みを表示
+    # Attention
     query_encoder = AttentionQueryTower(input_dims=query_modality_dims, output_dim=128)
     document_encoder = IntermediateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
     model = TwoTowerModel(query_encoder=query_encoder, document_encoder=document_encoder)
