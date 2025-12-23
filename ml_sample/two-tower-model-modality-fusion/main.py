@@ -9,6 +9,7 @@ from models import (
     EarlyFusionDocumentTower,
     IntermediateFusionDocumentTower,
     LateFusionDocumentTower,
+    GatedMultimodalFusionQueryTower,
     GatedQueryTower,
     QueryTower,
     TwoTowerModel,
@@ -44,7 +45,8 @@ def main() -> None:
 
     # Gate
     # query_encoder = QueryTower(input_dims=query_modality_dims, output_dim=128)
-    query_encoder = GatedQueryTower(input_dims=query_modality_dims, output_dim=128)
+    # query_encoder = GatedQueryTower(input_dims=query_modality_dims, output_dim=128)
+    query_encoder = GatedMultimodalFusionQueryTower(input_dims=query_modality_dims, output_dim=128)
     # document_encoder = EarlyFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
     document_encoder = IntermediateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
     # document_encoder = LateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)

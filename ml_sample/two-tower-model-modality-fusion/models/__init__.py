@@ -6,6 +6,7 @@ from .document import (
 from .model import TwoTowerModel
 from .query import (
     AttentionQueryTower,
+    GatedMultimodalFusionQueryTower,
     GatedQueryTower,
     QueryTower,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "EarlyFusionDocumentTower",
     "IntermediateFusionDocumentTower",
     "LateFusionDocumentTower",
+    "GatedMultimodalFusionQueryTower",
     "GatedQueryTower",
     "QueryTower",
     "TwoTowerModel",
