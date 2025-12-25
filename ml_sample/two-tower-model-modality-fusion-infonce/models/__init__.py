@@ -1,5 +1,6 @@
 from .document import (
     EarlyFusionDocumentTower,
+    GatedMultimodalFusionDocumentTower,
     IntermediateFusionDocumentTower,
     LateFusionDocumentTower,
 )
@@ -15,6 +16,7 @@ from .query import (
 __all__ = [
     "AttentionQueryTower",
     "EarlyFusionDocumentTower",
+    "GatedMultimodalFusionDocumentTower",
     "IntermediateFusionDocumentTower",
     "LateFusionDocumentTower",
     "GatedMultimodalFusionQueryTower",

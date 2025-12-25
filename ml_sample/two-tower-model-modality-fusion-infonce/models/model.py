@@ -40,10 +40,23 @@ class TwoTowerModel(LightningModule):
         hard_negative_document_embeddings = self.document_encoder(x_hard_negative_document)
 
         loss: torch.Tensor = self._criterion(query_embeddings, document_embeddings, hard_negative_document_embeddings)
-        self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("train/tau", torch.exp(self._criterion.logit_scale).clamp(max=100), on_epoch=True)
+        self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=True, logger=True)
+        self.log("train/tau", torch.exp(self._criterion.logit_scale).clamp(max=100), on_step=True, prog_bar=True, logger=True)
 
         return loss
+
+    def validation_step(
+        self,
+        batch: tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], dict[str, torch.Tensor]],
+        batch_idx: int
+    ) -> None:
+        x_query, x_document, x_hard_negative_document = batch
+        query_embeddings = self.query_encoder(x_query)
+        document_embeddings = self.document_encoder(x_document)
+        hard_negative_document_embeddings = self.document_encoder(x_hard_negative_document)
+
+        val_loss = self._criterion(query_embeddings, document_embeddings, hard_negative_document_embeddings)
+        self.log("val/loss", val_loss, on_epoch=True, prog_bar=True, logger=True)
 
     def configure_optimizers(self) -> dict[str, Optimizer]:
         optimizer = torch.optim.AdamW(

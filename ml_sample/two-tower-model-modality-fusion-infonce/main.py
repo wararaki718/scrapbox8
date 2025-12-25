@@ -1,58 +1,59 @@
 import pandas as pd
 import torch
 from lightning import Trainer
+from lightning.pytorch.loggers import TensorBoardLogger
 from torch.utils.data import DataLoader
 
 from collator import MultiModalCollator
 from models import (
     AttentionQueryTower,
-    EarlyFusionDocumentTower,
-    IntermediateFusionDocumentTower,
-    LateFusionDocumentTower,
+    GatedMultimodalFusionDocumentTower,
     GatedMultimodalFusionQueryTower,
-    GatedQueryTower,
-    QueryTower,
     TwoTowerModel,
 )
 from utils import load_dummy_data
 
+logger = TensorBoardLogger("tb_logs", name="two_tower_modality_fusion_infonce")
+
 
 def main() -> None:
-    # ダミーデータの読み込み
-    (
+    # train data
+    dataset, query_modality_dims, document_modality_dims = load_dummy_data(n_data=3000)
+    train_loader = DataLoader(
         dataset,
-        query_modality_dims,
-        document_modality_dims,
-    ) = load_dummy_data(n_data=100)
-    data_loader = DataLoader(
-        dataset,
-        batch_size=16,
+        batch_size=128,
         shuffle=True,
         collate_fn=MultiModalCollator().collate,
+        num_workers=7,
+        persistent_workers=True,
     )
-    # test data
-    (
+    # validation data
+    dataset, _, _ = load_dummy_data(n_data=100)
+    val_loader = DataLoader(
         dataset,
-        _,
-        _,
-    ) = load_dummy_data(n_data=10)
-    test_loader = DataLoader(
-        dataset,
-        batch_size=10,
+        batch_size=32,
         shuffle=False,
         collate_fn=MultiModalCollator().collate,
+        num_workers=7,
+        persistent_workers=True,
+    )
+    # test data
+    dataset, _, _ = load_dummy_data(n_data=100)
+    test_loader = DataLoader(
+        dataset,
+        batch_size=32,
+        shuffle=False,
+        collate_fn=MultiModalCollator().collate,
+        num_workers=7,
+        persistent_workers=True,
     )
 
     # Gate
-    # query_encoder = QueryTower(input_dims=query_modality_dims, output_dim=128)
-    # query_encoder = GatedQueryTower(input_dims=query_modality_dims, output_dim=128)
     query_encoder = GatedMultimodalFusionQueryTower(input_dims=query_modality_dims, output_dim=128)
-    # document_encoder = EarlyFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
-    document_encoder = IntermediateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
-    # document_encoder = LateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
+    document_encoder = GatedMultimodalFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
     model = TwoTowerModel(query_encoder=query_encoder, document_encoder=document_encoder)
-    trainer = Trainer(max_epochs=5, log_every_n_steps=5, accelerator="auto")
-    trainer.fit(model=model, train_dataloaders=data_loader)
+    trainer = Trainer(max_epochs=5, log_every_n_steps=5, accelerator="auto", logger=logger)
+    trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
     print("### Gate Weights ###")
     model.eval()
@@ -68,10 +69,10 @@ def main() -> None:
 
     # Attention
     query_encoder = AttentionQueryTower(input_dims=query_modality_dims, output_dim=128)
-    document_encoder = IntermediateFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
+    document_encoder = GatedMultimodalFusionDocumentTower(input_dims=document_modality_dims, output_dim=128)
     model = TwoTowerModel(query_encoder=query_encoder, document_encoder=document_encoder)
     trainer = Trainer(max_epochs=5, log_every_n_steps=5)
-    trainer.fit(model=model, train_dataloaders=data_loader)
+    trainer.fit(model=model, train_dataloaders=train_loader, val_dataloaders=val_loader)
 
     print("### Attention Maps ###")
     model.eval()
