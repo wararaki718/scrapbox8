@@ -29,25 +29,6 @@ class FAISSVectorDB:
         
         self.index.add(vecs)
         print(f"Added {len(doc_ids)} docs. Total: {self.index.ntotal}")
-
-    async def search_async(self, vector: list[float], limit: int=60) -> list[str]:
-        """
-        HQURetriever から呼ばれる非同期検索インターフェース
-        """
-        # FAISSの検索自体はCPU計算（またはGPU）ですが、
-        # asyncio.to_thread を使いブロッキングを回避して並列性を確保します
-        query_vec = np.array([vector], dtype=np.float32)
-        
-        _, indices = await asyncio.to_thread(
-            self.index.search, query_vec, limit
-        )
-
-        # FAISS のインデックスIDを実際の Doc ID に変換
-        res = []
-        for idx in indices[0]:
-            if idx in self.doc_map:
-                res.append(self.doc_map[idx])
-        return res
     
     async def search_async_with_scores(self, vector: list[float], limit: int) -> list[tuple[str, float]]:
         """

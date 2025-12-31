@@ -27,7 +27,7 @@ class HQUEngine:
         vectors = [e.values for e in response.embeddings]
         return torch.tensor(vectors, dtype=torch.float32)
 
-    async def generate_hqu_vectors(self, user_query: str):
+    async def generate_hqu_vectors(self, user_query: str) -> tuple[HQUResponse, torch.Tensor]:
         """
         HQUプロセス全体を実行
         """
