@@ -10,23 +10,31 @@ class HQUEngine:
     def __init__(self, api_key: str, alpha: float = 0.35) -> None:
         self.client = genai.Client(api_key=api_key)
         self.model_id = "gemini-2.5-flash-lite"
+        self.embed_model_id = "text-embedding-004" # 最新のEmbeddingモデル
         self.processor = HQUProcessor(alpha=alpha)
 
-    async def generate_hqu_vectors(self, user_query: str, embed_fn) -> tuple[HQUResponse, torch.Tensor]:
+    async def _get_embeddings(self, texts: list[str]) -> torch.Tensor:
         """
-        1. Geminiでクエリ分解 & 仮説生成
-        2. テキストを一括でベクトル化
-        3. PyTorchで合成
+        Google GenAI API を使用して一括でベクトルを取得する
         """
-        # --- Step 1: Geminiによる構造化生成 ---
-        prompt = f"""
-        あなたは検索エンジン最適化の専門家です。
-        ユーザーのクエリを「技術的」「意図・悩み」「背景」の3つの視点に分解し、
-        それぞれに対する仮説回答(150文字程度)をJSONで出力してください。
-        Query: {user_query}
-        """
+        # SDKの batch_embed_contents を使用
+        response = self.client.models.embed_content(
+            model=self.embed_model_id,
+            contents=texts,
+            config=types.EmbedContentConfig(task_type="RETRIEVAL_QUERY")
+        )
+        # response.embeddings[i].values にベクトルが格納されている
+        vectors = [e.values for e in response.embeddings]
+        return torch.tensor(vectors, dtype=torch.float32)
 
-        response = self.client.models.generate_content(
+    async def generate_hqu_vectors(self, user_query: str):
+        """
+        HQUプロセス全体を実行
+        """
+        # Step 1: Gemini によるクエリ分解と仮説生成
+        prompt = f"ユーザーのクエリを3つの視点に分解し、仮説回答を生成してください: {user_query}"
+        
+        gen_response = self.client.models.generate_content(
             model=self.model_id,
             contents=prompt,
             config=types.GenerateContentConfig(
@@ -35,22 +43,26 @@ class HQUEngine:
                 temperature=0.2,
             ),
         )
-        hqu_data: HQUResponse = response.parsed
+        hqu_data: HQUResponse = gen_response.parsed
 
-        # --- Step 2: テキストの抽出と一括ベクトル化 ---
-        # 効率化のため、全テキストをフラットなリストにして1回のAPIコールで送るのが理想
+        # Step 2: テキストの抽出 (Sub-Query と Hypothetical Answer)
         queries = [item.sub_query for item in hqu_data.hybrid_queries]
         hypos = [item.hypothetical_answer for item in hqu_data.hybrid_queries]
 
-        # ※ embed_fn は外部のEmbeddingモデル(text-embedding-004等)を想定
-        q_vectors = await embed_fn(queries) # Shape: [3, Dim]
-        h_vectors = await embed_fn(hypos)   # Shape: [3, Dim]
+        # Step 3: 一括ベクトル化 (API Call を 1回に集約して高速化)
+        # 全てのテキスト(計6個)を一度に送り、ネットワークRTTを削減
+        all_texts = queries + hypos
+        all_embeddings = await self._get_embeddings(all_texts)
+        
+        # 取得したテンソルを分割 [3, dim] ずつ
+        q_embeds = all_embeddings[:len(queries)]
+        h_embeds = all_embeddings[len(queries):]
 
-        # --- Step 3: PyTorchによるベクトル合成 ---
+        # Step 4: PyTorch によるベクトル合成
         with torch.no_grad():
             fused_vectors = self.processor.fuse_embeddings(
-                torch.tensor(q_vectors), 
-                torch.tensor(h_vectors)
+                q_embeds, 
+                h_embeds
             )
 
         return hqu_data, fused_vectors

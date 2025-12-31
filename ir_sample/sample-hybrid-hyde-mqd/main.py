@@ -19,7 +19,7 @@ async def main() -> None:
     user_input = "iPhoneの画面が真っ暗で反応しない時の対処法"
     
     # HQU実行 (生成 + ベクトル合成)
-    hqu_result, vectors = await engine.generate_hqu_vectors(user_input, mock_embedding_api)
+    hqu_result, vectors = await engine.generate_hqu_vectors(user_input)
 
     print(f"Synthesized Vectors Shape: {vectors.shape}") # [3, 768]
     for i, item in enumerate(hqu_result.hybrid_queries):
