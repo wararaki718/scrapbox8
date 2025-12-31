@@ -7,8 +7,8 @@ from schema import HQUResponse
 
 
 class HQUEngine:
-    def __init__(self, api_key: str, alpha: float = 0.35) -> None:
-        self.client = genai.Client(api_key=api_key)
+    def __init__(self, client: genai.Client, alpha: float = 0.35) -> None:
+        self.client = client
         self.model_id = "gemini-2.5-flash-lite"
         self.embed_model_id = "text-embedding-004" # 最新のEmbeddingモデル
         self.processor = HQUProcessor(alpha=alpha)
