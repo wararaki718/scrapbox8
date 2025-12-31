@@ -1,31 +1,34 @@
-import os
 import asyncio
+import os
+import random
+
 import torch
 
-# 1. データ構造の定義
-
-# 2. HQU 統合エンジンの実装
+from db import FAISSVectorDB
 from engine import HQUEngine
+from retriever import HQURetriever
 
-# 3. 実行デモ用のモック
-async def mock_embedding_api(texts: list[str] ) -> list[list[float]]:
-    # 実際のAPIコールの代わりにランダムベクトルを返す（dim=768）
-    return torch.randn(len(texts), 768).tolist()
 
 async def main() -> None:
     api_key = os.getenv("GEMINI_API_KEY", "your_api_key_here")
+
+    # サンプルデータをFAISSに登録 (実際は事前にベクトル化して保存しておく想定)
+    dimension = 768
+    db = FAISSVectorDB(dimension=dimension)
+
+    sample_ids = [f"manual_doc_{i}" for i in range(100)]
+    sample_vecs = torch.randn(100, dimension)
+    sample_vecs = torch.nn.functional.normalize(sample_vecs, p=2, dim=-1)
+    db.add_documents(sample_ids, sample_vecs)
+
+    print("Querying: 'iPhoneの画面が真っ暗な時の対処法'...")
     engine = HQUEngine(api_key)
-    
-    user_input = "iPhoneの画面が真っ暗で反応しない時の対処法"
-    
-    # HQU実行 (生成 + ベクトル合成)
-    hqu_result, vectors = await engine.generate_hqu_vectors(user_input)
+    retriever = HQURetriever(engine, db)
+    results = await retriever.search("iPhoneの画面が真っ暗な時の対処法")
 
-    print(f"Synthesized Vectors Shape: {vectors.shape}") # [3, 768]
-    for i, item in enumerate(hqu_result.hybrid_queries):
-        print(f"\nPerspective {i+1}: {item.perspective}")
-        print(f"Vector (norm): {torch.norm(vectors[i]):.4f}") # 正規化の確認
-
+    print("\n--- Final Integrated Ranking (RRF) ---")
+    for doc_id, score in results:
+        print(f"Document ID: {doc_id} | RRF Score: {score:.5f}")
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -3,7 +3,7 @@
 ## setup
 
 ```shell
-pip install torch numpy google-genai pydantic
+pip install torch numpy google-genai pydantic faiss-cpu
 ```
 
 ## run
