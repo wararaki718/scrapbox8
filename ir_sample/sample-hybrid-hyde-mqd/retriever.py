@@ -52,8 +52,9 @@ class HQUFullStackRetriever:
         """
         HQUプロセス全体を実行。全視点でしきい値を超えない場合のフォールバック付き。
         """
-        hqu_data, fused_vectors = await self.engine.generate_hqu_vectors(user_query)
-        
+        # hqu_data, fused_vectors = await self.engine.generate_hqu_vectors(user_query)
+        hqu_data, fused_vectors = await self.engine.generate_hqu_with_cache(user_query)
+
         tasks = [
             self._search_single_perspective(fused_vectors[i].tolist(), item.perspective)
             for i, item in enumerate(hqu_data.hybrid_queries)

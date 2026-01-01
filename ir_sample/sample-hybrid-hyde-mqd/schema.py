@@ -16,3 +16,8 @@ class SearchResultWithMeta(BaseModel):
     score: float
     perspective: str  # どの視点でヒットしたか
     content: str      # ドキュメント本文
+
+
+class CacheEntry(BaseModel):
+    hqu_response: HQUResponse  # HQUResponse object
+    timestamp: float

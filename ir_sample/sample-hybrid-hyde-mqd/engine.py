@@ -1,7 +1,9 @@
 import torch
+import torch.nn.functional as F
 from google import genai
 from google.genai import types
 
+from cache import HQUSemanticCache
 from processor import HQUProcessor
 from schema import HQUResponse
 
@@ -12,6 +14,7 @@ class HQUEngine:
         self.model_id = "gemini-2.5-flash-lite"
         self.embed_model_id = "text-embedding-004" # 最新のEmbeddingモデル
         self.processor = HQUProcessor(alpha=alpha)
+        self.cache = HQUSemanticCache(dimension=768, threshold=0.95, ttl=86400 * 7)
 
     async def _get_embeddings(self, texts: list[str]) -> torch.Tensor:
         """
@@ -64,5 +67,47 @@ class HQUEngine:
                 q_embeds, 
                 h_embeds
             )
+        return hqu_data, fused_vectors
 
+    async def process_vectors_from_cache(self, cached_hqu: HQUResponse) -> torch.Tensor:
+        """
+        キャッシュされたHQUデータから、直接検索用ベクトルを合成する。
+        Gemini APIの呼び出しをスキップし、Embedding APIと合成演算のみを実行。
+        """
+        # 1. キャッシュデータからテキストを抽出
+        queries = [item.sub_query for item in cached_hqu.hybrid_queries]
+        hypos = [item.hypothetical_answer for item in cached_hqu.hybrid_queries]
+
+        # 2. テキストを一括でベクトル化 (ここだけはAPIを叩くが、Gemini生成より圧倒的に速い)
+        all_texts = queries + hypos
+        all_embeddings = await self._get_embeddings(all_texts)
+        
+        # 3. テンソルのスライシング
+        q_embeds = all_embeddings[:len(queries)]
+        h_embeds = all_embeddings[len(queries):]
+
+        # 4. PyTorchによる合成演算 (既存のロジックを再利用)
+        with torch.no_grad():
+            fused_vectors = self.processor.fuse_embeddings(
+                q_embeds, 
+                h_embeds
+            )
+        return fused_vectors
+
+    async def generate_hqu_with_cache(self, user_query: str) -> tuple[HQUResponse, torch.Tensor]:
+        # 1. クエリのベクトル化 (キャッシュ判定用)
+        q_vector = await self._get_embeddings([user_query])
+        
+        # 2. キャッシュ確認
+        cached_res = await self.cache.lookup(user_query, q_vector[0])
+        if cached_res:
+            # キャッシュヒット時は、このデータを使ってそのままFAISS検索へ
+            return cached_res, await self.process_vectors_from_cache(cached_res)
+
+        # 3. キャッシュミス時は Gemini を実行
+        hqu_data, fused_vectors = await self.generate_hqu_vectors(user_query)
+        
+        # 4. 結果をキャッシュに保存
+        self.cache.update(user_query, q_vector[0], hqu_data)
+        
         return hqu_data, fused_vectors
