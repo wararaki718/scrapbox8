@@ -1,9 +1,8 @@
 import torch
-import torch.nn.functional as F
 from google import genai
 from google.genai import types
 
-from cache import HQUSemanticCache
+from cache import HQUSemanticCache, HQUSemanticCacheSWR
 from processor import HQUProcessor
 from schema import HQUResponse
 
@@ -14,7 +13,8 @@ class HQUEngine:
         self.model_id = "gemini-2.5-flash-lite"
         self.embed_model_id = "text-embedding-004" # 最新のEmbeddingモデル
         self.processor = HQUProcessor(alpha=alpha)
-        self.cache = HQUSemanticCache(dimension=768, threshold=0.95, ttl=86400 * 7)
+        # self.cache = HQUSemanticCache(dimension=768, threshold=0.95, ttl=86400 * 7)
+        self.cache = HQUSemanticCacheSWR(dimension=768, threshold=0.95, ttl=86400 * 7, stale_threshold=3600)
 
     async def _get_embeddings(self, texts: list[str]) -> torch.Tensor:
         """
@@ -111,3 +111,17 @@ class HQUEngine:
         self.cache.update(user_query, q_vector[0], hqu_data)
         
         return hqu_data, fused_vectors
+
+    async def generate_hqu_optimized(self, user_query: str) -> tuple[HQUResponse, torch.Tensor]:
+        q_vector = await self._get_embeddings([user_query])
+        
+        # SWR対応ルックアップ
+        hqu_data, is_stale = await self.cache.lookup_with_swr(user_query, q_vector[0], self)
+        
+        if hqu_data:
+            # キャッシュが古くても、ユーザーには即座にレスポンスを返す（爆速）
+            fused_vectors = await self.process_vectors_from_cache(hqu_data)
+            return hqu_data, fused_vectors
+        
+        # キャッシュミス時のみユーザーを待たせて推論
+        return await self.generate_hqu_vectors(user_query)
