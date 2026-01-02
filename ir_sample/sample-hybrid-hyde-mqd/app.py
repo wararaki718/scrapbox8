@@ -2,10 +2,6 @@ import asyncio
 import os
 from typing import Any
 
-# これまで実装してきたクラス群を想定（1つのファイルにまとめるかインポート）
-# HQUEngine, FAISSVectorDB, HQUFullStackRetriever, HQUAnswerGenerator, 
-# HQUSemanticCacheSWR, ProfileResult
-
 from google import genai
 
 from answer import HQUAnswerGenerator
@@ -13,6 +9,7 @@ from cache import HQUSemanticCacheSWR
 from db import FAISSVectorDB
 from engine import HQUEngine
 from retriever import HQUFullStackRetriever
+
 
 class HQUProductionSystem:
     """
