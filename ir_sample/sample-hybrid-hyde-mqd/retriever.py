@@ -3,7 +3,8 @@ from typing import Any
 
 from db import FAISSVectorDB
 from engine import HQUEngine
-from schema import SearchResultWithMeta
+from profiler import HQUProfiler
+from schema import ProfileResult, SearchResultWithMeta
 
 
 class HQUFullStackRetriever:
@@ -88,4 +89,62 @@ class HQUFullStackRetriever:
             "perspectives": hqu_data.hybrid_queries,
             "results_by_perspective": perspective_results,
             "final_docs": unique_docs[:top_k]
+        }
+
+    async def search_with_profiling(self, user_query: str) -> dict[str, Any]:
+        profile = ProfileResult()
+        profiler = HQUProfiler(profile)
+
+        # 1. キャッシュ・ルックアップ (L1/L2)
+        with profiler.measure("1_cache_lookup"):
+            q_vector = await self.engine._get_embeddings([user_query])
+            hqu_data, is_stale = await self.engine.cache.lookup_with_swr(
+                user_query, q_vector[0], self.engine
+            )
+
+        # 2. クエリ分解 (Cache Miss 時のみ Gemini を実行)
+        if not hqu_data:
+            with profiler.measure("2_gemini_decomposition"):
+                hqu_data, fused_vectors = await self.engine.generate_hqu_vectors(user_query)
+        else:
+            with profiler.measure("2_vector_fusion_from_cache"):
+                fused_vectors = await self.engine.process_vectors_from_cache(hqu_data)
+
+        # 3. 並列ベクトル検索 (FAISS)
+        with profiler.measure("3_parallel_faiss_search"):
+            tasks = [
+                self._search_single_perspective(fused_vectors[i].tolist(), item.perspective)
+                for i, item in enumerate(hqu_data.hybrid_queries)
+            ]
+            perspective_results = await asyncio.gather(*tasks)
+
+        # 全視点で結果が空だった場合の処理
+        total_hits = sum(len(res) for res in perspective_results)
+        if total_hits == 0:
+            # フォールバック: しきい値を下げて再試行、または「情報なし」として扱う
+            print("[System] Zero results found above threshold. Returning empty list.")
+            return {
+                "original_query": user_query,
+                "perspectives": hqu_data.hybrid_queries,
+                "results_by_perspective": [],
+                "final_docs": []
+            }
+
+        # 4. 最終ランキング統合 (RRF)
+        with profiler.measure("4_rrf_fusion"):
+            # 重複を除去して最終リストを作成 (RRFなどの統合ロジックへ)
+            unique_docs = []
+            seen = set()
+            for res_list in perspective_results:
+                for res in res_list:
+                    if res.doc_id not in seen:
+                        unique_docs.append(res.content)
+                        seen.add(res.doc_id)
+
+        return {
+            "answer_data": hqu_data,
+            "results": unique_docs,
+            "performance": profile.durations, # ミリ秒単位の計測結果
+            "cache_status": "hit" if hqu_data else "miss",
+            "is_stale_triggered": is_stale
         }

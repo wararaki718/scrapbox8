@@ -58,6 +58,12 @@ async def main() -> None:
     print("="*50)
     print(final_answer)
 
+    result = await retriever.search_with_profiling(user_input)
+
+    print("\n--- Performance Profile (ms) ---")
+    for task, duration in result["performance"].items():
+        print(f"{task:30}: {duration:>8} ms")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

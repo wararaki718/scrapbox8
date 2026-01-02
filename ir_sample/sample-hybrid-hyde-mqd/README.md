@@ -6,8 +6,12 @@
 pip install torch numpy google-genai pydantic faiss-cpu
 ```
 
-## run
+## batch run
 
 ```shell
-python main.py
+python batch.py
+```
+
+```shell
+python app.py
 ```

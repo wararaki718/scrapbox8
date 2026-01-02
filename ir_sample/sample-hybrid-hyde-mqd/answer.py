@@ -13,11 +13,10 @@ class HQUAnswerGenerator:
     async def generate_final_answer(self, search_data: dict[str, Any]) -> str:
         # コンテキストの構築
         context_blocks = []
-        for res_list in search_data["results_by_perspective"]:
-            for res in res_list:
-                block = f"【視点: {res.perspective}】\n内容: {res.content}"
-                context_blocks.append(block)
-        
+        for res in search_data["results_by_perspective"]:
+            block = f"【視点: {res.perspective}】\n内容: {res.hypothetical_answer}"
+            context_blocks.append(block)
+
         context_str = "\n\n".join(context_blocks)
         
         prompt = f"""
