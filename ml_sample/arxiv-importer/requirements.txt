@@ -2,3 +2,4 @@ google-generativeai
 pypdf
 torch
 requests
+pytest
