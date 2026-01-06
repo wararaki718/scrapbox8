@@ -1,27 +1,36 @@
-# Guiding Principles for AI Agents
+# AIエージェントのための指針 (Guiding Principles)
 
-This repository is a collection of self-contained code samples, organized by topic into top-level directories (e.g., `aws_sample`, `ml_sample`, `ir_sample`, `py_sample`). Each subdirectory is an independent project.
+本リポジトリは、トピックごとにトップレベルディレクトリ（例：`aws_sample`, `ml_sample`, `ir_sample`, `py_sample`）に整理された、自己完結型のコードサンプルの集合体です。各サブディレクトリは、独立した高品質なプロジェクトとして扱われます。
 
-## Key Concepts
+## 基本コンセプト
 
-- **Project Structure**: Each sample resides in its own directory and is self-contained. There is no shared code or single overarching architecture across the different samples.
-- **Primary Documentation**: The `README.md` file within each sample's directory is the most important source of information. It contains specific instructions on how to set up, run, and use the sample.
-- **Execution**: Most Python-based samples are executed via simple command-line instructions, such as `python main.py` or `python batch.py`. Always refer to the `README.md` for the exact command.
-- **Dependencies**: Dependencies are managed on a per-sample basis. Some samples include a `requirements.txt` file or specify `pip install` commands in their `README.md`.
+- **プロジェクト構造**: 各サンプルは自身のディレクトリ内で完結しており、独立しています。異なるサンプル間でのコード共有や、リポジトリ全体を貫く共通アーキテクチャは存在しません。
+- **主要ドキュメント**: 各ディレクトリ内の `README.md` が最も重要な情報源です。セットアップ、実行方法、使用方法に関する具体的な指示はすべてここに含まれます。
+- **実行と自動化**: 基本的なサンプルは `python main.py` で実行されますが、高度なサンプル（v2以降）では `Makefile` による標準化されたワークフローを採用します。実行前に必ず `Makefile` の有無を確認してください。
+- **依存関係管理**: `requirements.txt` または `pyproject.toml` を用い、サンプルごとに管理します。
 
-## Developer Workflow
+## コード品質およびエンジニアリング基準
 
-When working on a specific sample, follow this workflow:
+**v2** と表記されたプロジェクト、および **機械学習/研究系（ml_sample）** のプロジェクトについては、以下の基準を厳格に適用してください。
 
-1.  **Navigate to the Sample Directory**: All operations should be performed from within the relevant sample's directory.
-2.  **Consult the README**: Before making any changes, thoroughly read the `README.md` file in that directory. It will provide context and instructions.
-3.  **Install Dependencies**: If the `README.md` or a `requirements.txt` file specifies dependencies, install them first. For example, in `ir_sample/simple-qdrant-sparse-retrieval`, you need to run `pip install qdrant-client==1.16.1 git+https://github.com/bizreach-inc/light-splade.git`.
-4.  **Run the Sample**: Use the command specified in the `README.md` to run the code. For example, to run the `sample-hybrid-hyde-mqd` sample, you might use `python batch.py` for batch processing or `python app.py` to run the application.
+1.  **厳格な型ヒント (Type Hinting)**: すべての関数に型ヒントを付与してください。`mypy` を用いた静的型チェックに合格するコードを目指します。
+2.  **静的解析とフォーマット**: `ruff` を使用して、高速なリンティングとコード整形を行ってください。特に指定がない限り、1行の長さは100文字以内とします。
+3.  **テンソル形状の追跡 (ML特有)**: PyTorchの実装では、`forward` メソッド内の各ステップでテンソル形状をコメントとして記述してください（例: `# x: (Batch, Seq_Len, Dim)`）。
+4.  **自動検証**: `pytest` を用いたテストを実装してください。モデル実装には、ダミーデータを用いた順伝播（Forward Pass）テストを含め、テンソル次元の整合性を必ず確認してください。
 
-## Examples
+## 開発ワークフロー
 
--   **AWS Samples (`aws_sample`)**: These samples demonstrate how to use AWS services, often with LocalStack for local development. They include detailed setup instructions for tools like the AWS SAM CLI and commands for interacting with services. See [aws_sample/use-localstack/README.md](aws_sample/use-localstack/README.md).
--   **Machine Learning Samples (`ml_sample`)**: These samples cover a wide range of ML topics. Each is a focused implementation of a specific algorithm or technique.
--   **Information Retrieval Samples (`ir_sample`)**: These samples explore different information retrieval methods. For instance, `sample-hybrid-hyde-mqd` in [ir_sample/sample-hybrid-hyde-mqd/README.md](ir_sample/sample-hybrid-hyde-mqd/README.md) provides instructions for running a web application and a batch process.
+特定のサンプルを扱う際は、以下の手順に従ってください。
 
-By treating each sample as a distinct mini-project and prioritizing its `README.md`, you will be able to navigate and contribute to this repository effectively.
+1.  **ディレクトリの移動**: すべての操作は、該当するサンプルのディレクトリ内で行ってください。
+2.  **READMEとMakefileの参照**: 変更を加える前に `README.md` を熟読してください。`Makefile` が存在する場合は、`make install` でセットアップを行ってください。
+3.  **品質チェック**: コードを確定させる前に、`make check`（または `ruff`, `mypy`, `pytest` の個別コマンド）を実行し、品質基準を満たしているか確認してください。
+4.  **実装の論理性**: 論文を実装する際は、数学的な忠実度を優先し、コードブロックが論文のどのセクションに対応するかを明記してください。
+
+## サンプル例
+
+-   **AWSサンプル (`aws_sample`)**: AWSサービスとの連携や LocalStack の設定に焦点を当てます。
+-   **機械学習サンプル (`ml_sample`)**: 論文の再現精度、テンソル形状の追跡、`pytest` による検証を優先します（例: `ml_sample/arxiv-importer-v2`）。
+-   **情報検索サンプル (`ir_sample`)**: 検索技術やデータ処理パイプラインに焦点を当てます。
+
+各サンプルを独立した高品質なミニプロジェクトとして扱い、自動化ツールを活用することで、リポジトリの信頼性と保守性を維持してください。

@@ -1,0 +1,24 @@
+[tool.ruff]
+line-length = 88
+exclude = ["generated_models"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "D", "UP", "B", "A", "C4", "SIM", "PTH", "PD"]
+ignore = [
+    "E501",
+    "T201",
+    "D203", # incorrect-blank-line-before-class
+    "D213", # multi-line-summary-second-line
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+exclude = ["generated_models/"]

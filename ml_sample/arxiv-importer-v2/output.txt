@@ -1,0 +1,6 @@
+Running type checker (mypy)...
+mypy .
+src/generator.py:27: error: Missing return statement  [return]
+src/generator.py:63: error: Name "generation_config" is not defined  [name-defined]
+tests/test_model.py:44: error: Returning Any from function declared to return "Path | None"  [no-any-return]
+Found 3 errors in 2 files (checked 6 source files)

@@ -1,0 +1,8 @@
+google-generativeai
+pypdf
+torch
+requests
+ruff
+mypy
+pytest
+types-requests
