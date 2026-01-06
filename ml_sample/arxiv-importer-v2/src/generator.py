@@ -45,6 +45,7 @@ class CodeGenerator:
         4.  **PyTorchベストプラクティス**:
             -   デバイス指定に柔軟に対応できるよう、`forward` メソッド内で新たに生成するテンソルには `.to(device)` を適用してください。
             -   数値的安定性を考慮し、分類の最終層では `F.log_softmax` の利用を検討してください。
+            -   Transformer系のレイヤーを使用する場合は、推論パフォーマンス向上のため `batch_first=True` を推奨してください。
         5.  **出力形式**:
             -   最終的な出力は、必要なimport文を含む完全なPythonコードブロックのみとしてください。
             -   コードの前に説明や言い訳は不要です。
@@ -59,18 +60,26 @@ class CodeGenerator:
         """
 
         try:
-            model = genai.GenerativeModel(
-                model_name="gemini-1.5-flash-latest", generation_config=generation_config
+            logger.info("Generating PyTorch code from paper text...")
+            response = self.model.generate_content(
+                [system_prompt, prompt],
+                generation_config=genai.types.GenerationConfig(temperature=0.05),
             )
-            response = model.generate_content(prompt)
-            # response.textがNoneの場合も考慮
-            generated_code = str(response.text) if response.text else None
+
+            if not response.text:
+                logger.warning("Generated code is empty.")
+                return None
+
+            code = str(response.text).strip()
+            if code.startswith("```python"):
+                code = code[9:]
+            if code.endswith("```"):
+                code = code[:-3]
+
+            logger.info("Code generation complete.")
+            return code.strip()
         except Exception as e:
             logger.error("Error during code generation: %s", e)
-            return None
-
-        if not generated_code:
-            logger.warning("Generated code is empty.")
             return None
 
     def validate_syntax(self, code: str) -> bool:

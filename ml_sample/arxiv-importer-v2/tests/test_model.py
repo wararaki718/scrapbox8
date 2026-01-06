@@ -39,9 +39,10 @@ def find_generated_model_files() -> list[Path]:
 @pytest.fixture(scope="module", params=find_generated_model_files())
 def model_file(request: Any) -> Path | None:
     """各生成モデルファイルに対するフィクスチャ."""
-    if not request.param.exists():
-        pytest.skip(f"Model file not found: {request.param}")
-    return request.param
+    param: Path = request.param
+    if not param.exists():
+        pytest.skip(f"Model file not found: {param}")
+    return param
 
 
 @pytest.fixture(scope="module")
