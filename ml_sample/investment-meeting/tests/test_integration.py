@@ -75,9 +75,7 @@ class TestModerationWorkflow:
             ]
             from src.moderator import DebateRound
 
-            moderator.debate_history.append(
-                DebateRound(round_num=round_num, messages=messages)
-            )
+            moderator.debate_history.append(DebateRound(round_num=round_num, messages=messages))
 
         # Should have 4 rounds total (Phase 1 + 3 debate rounds)
         assert len(moderator.debate_history) == 4
@@ -156,6 +154,7 @@ class TestDebateHistoryModel:
         )
 
         from pydantic_core import ValidationError
+
         with pytest.raises(ValidationError):
             history.final_consensus = "SELL"
 
@@ -193,7 +192,7 @@ class TestReporterIntegration:
 
         report = reporter.generate_report(history)
         assert isinstance(report, str)
-        assert "INVESTMENT MEETING REPORT" in report
+        assert "投資会議レポート" in report
         assert investment_case in report
         assert "Hold for more data" in report
 
@@ -225,16 +224,16 @@ class TestReporterIntegration:
 
         json_report = reporter.generate_json_report(history)
         assert isinstance(json_report, str)
-        assert "investment_case" in json_report
-        assert "participants" in json_report
-        assert "debate_rounds" in json_report
+        assert "投資案件" in json_report
+        assert "参加者" in json_report
+        assert "ディベートラウンド" in json_report
 
     def test_reporter_summary(
         self,
         reporter: MeetingReporter,
         agents: list,
         investment_case: str,
-        capsys,
+        capsys: pytest.CaptureFixture,
     ) -> None:
         """Test reporter prints summary."""
         from src.agents import AgentMessage
@@ -259,7 +258,7 @@ class TestReporterIntegration:
 
         reporter.print_summary(history)
         captured = capsys.readouterr()
-        assert "MEETING SUMMARY" in captured.out
+        assert "投資会議 - サマリー" in captured.out
         assert "Strong Buy" in captured.out
 
 

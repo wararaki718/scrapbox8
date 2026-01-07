@@ -101,6 +101,7 @@ class TestDebateRoundModel:
         round_obj = DebateRound(round_num=0, messages=messages)
 
         from pydantic_core import ValidationError
+
         with pytest.raises(ValidationError):
             round_obj.round_num = 1
 
@@ -125,9 +126,7 @@ class TestContextBuilding:
             )
             for agent in moderator.agents
         ]
-        moderator.debate_history.append(
-            DebateRound(round_num=0, messages=phase1_messages)
-        )
+        moderator.debate_history.append(DebateRound(round_num=0, messages=phase1_messages))
 
         context = moderator._build_context_for_round(1)
         assert isinstance(context, str)

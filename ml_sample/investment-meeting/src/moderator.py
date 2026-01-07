@@ -56,21 +56,21 @@ class InvestmentMeetingModerator:
         """
         # Phase 1: Initial opinions
         print("\n" + "=" * 80)
-        print("PHASE 1: INITIAL INVESTMENT OPINIONS")
+        print("フェーズ1: 初期意見の提示")
         print("=" * 80)
         await self._phase1_initial_opinions()
 
         # Phase 2: Enforced debate rounds (minimum 3)
         print("\n" + "=" * 80)
-        print(f"PHASE 2: ENFORCED DEBATE ({self.MIN_DEBATE_ROUNDS} ROUNDS)")
+        print(f"フェーズ2: 3往復のディベート ({self.MIN_DEBATE_ROUNDS} ラウンド)")
         print("=" * 80)
         for round_num in range(1, self.MIN_DEBATE_ROUNDS + 1):
-            print(f"\n--- Round {round_num} / {self.MIN_DEBATE_ROUNDS} ---")
+            print(f"\n--- ラウンド {round_num} / {self.MIN_DEBATE_ROUNDS} ---")
             await self._debate_round(round_num)
 
         # Phase 3: Consensus and summary
         print("\n" + "=" * 80)
-        print("PHASE 3: CONSENSUS FORMATION & RISK SUMMARY")
+        print("フェーズ3: 合意形成とリスク評価")
         print("=" * 80)
         final_consensus = await self._phase3_consensus()
 
@@ -148,7 +148,7 @@ Now provide your counter-argument and challenge (3-4 sentences):
 
         # Print for visibility
         for msg in messages:
-            print(f"\n[{msg.agent_name}] Round {round_num}:")
+            print(f"\n[{msg.agent_name}] ラウンド {round_num}:")
             print(msg.message[:300] + "..." if len(msg.message) > 300 else msg.message)
 
     async def _phase3_consensus(self) -> str:
@@ -187,7 +187,7 @@ Keep response under 200 words.
             phase="Consensus",
         )
 
-        print(f"\n[CONSENSUS]\n{response.message}")
+        print(f"\n[最終合意]\n{response.message}")
         return response.message
 
     async def _get_agent_response(
@@ -229,17 +229,13 @@ Keep response under 200 words.
             # For round 1, use Phase 1 (initial opinions)
             initial_round = self.debate_history[0]
             context_parts = [
-                f"[{msg.agent_name}]: {msg.message[:200]}"
-                for msg in initial_round.messages
+                f"[{msg.agent_name}]: {msg.message[:200]}" for msg in initial_round.messages
             ]
             return "Initial positions:\n" + "\n".join(context_parts)
 
         # For rounds 2+, use previous debate round
         prev_round = self.debate_history[-1]
-        context_parts = [
-            f"[{msg.agent_name}]: {msg.message[:200]}"
-            for msg in prev_round.messages
-        ]
+        context_parts = [f"[{msg.agent_name}]: {msg.message[:200]}" for msg in prev_round.messages]
         return "Previous round arguments:\n" + "\n".join(context_parts)
 
     def _build_context_history(self, agent_name: str) -> str:
@@ -276,8 +272,6 @@ Keep response under 200 words.
                 summary_parts.append(f"DEBATE ROUND {round_obj.round_num}:")
 
             for msg in round_obj.messages:
-                summary_parts.append(
-                    f"  [{msg.agent_name}]: {msg.message[:200]}..."
-                )
+                summary_parts.append(f"  [{msg.agent_name}]: {msg.message[:200]}...")
 
         return "\n".join(summary_parts)

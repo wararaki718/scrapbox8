@@ -29,8 +29,7 @@ async def main(
 
     if not api_key:
         raise ValueError(
-            "GEMINI_API_KEY environment variable not set. "
-            "Please set it or pass api_key parameter."
+            "GEMINI_API_KEY environment variable not set. Please set it or pass api_key parameter."
         )
 
     # google.genai client will use GEMINI_API_KEY environment variable automatically
@@ -76,7 +75,7 @@ Investment decision needed: Allocate $50M venture capital?
         investment_case=investment_case,
     )
 
-    print("\n[Starting moderated investment meeting...]")
+    print("\n[会議を開始中...]")
     debate_history = await moderator.run_meeting()
 
     # Generate and save reports
@@ -88,9 +87,36 @@ Investment decision needed: Allocate $50M venture capital?
 
     reporter.print_summary(debate_history)
 
-    print("\n✅ Reports saved:")
-    print(f"   Text: {text_path}")
+    print("\n✅ レポートを保存しました:")
+    print(f"   テキスト: {text_path}")
     print(f"   JSON: {json_path}")
+
+    # Generate translated reports
+    print("\n[日本語翻訳レポートを生成中...]")
+    try:
+        text_report = text_path.read_text(encoding="utf-8")
+        translated_text = await reporter.translate_report_to_japanese(
+            text_report,
+        )
+        translated_path = reporter.save_translated_report(
+            translated_text,
+            filename_base="investment_decision",
+        )
+        print(f"✅ 翻訳済みテキスト: {translated_path}")
+    except Exception as e:
+        print(f"⚠️  テキスト翻訳エラー: {e}")
+
+    # Generate enhanced JSON report
+    try:
+        json_content = json_path.read_text(encoding="utf-8")
+        enhanced_json = await reporter.enhance_json_report(json_content)
+        enhanced_path = reporter.save_enhanced_json_report(
+            enhanced_json,
+            filename_base="investment_decision",
+        )
+        print(f"✅ 強化済みJSON: {enhanced_path}")
+    except Exception as e:
+        print(f"⚠️  JSON翻訳エラー: {e}")
 
 
 if __name__ == "__main__":

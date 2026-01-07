@@ -155,34 +155,87 @@ make check
 - `test_moderator.py::TestThreeRoundEnforcement`: 3往復ループの検証
 - `test_integration.py::TestThreeRoundIntegration`: 全フェーズの完全性確認
 
+## 🌐 AI による日本語翻訳機能
+
+生成されたレポートは、Google Gemini を使用して自動的に日本語に翻訳・改良されます。
+
+### 翻訳プロセス
+
+1. **テキストレポート翻訳** (`translate_report_to_japanese`)
+   - 元のレポートをより自然で読みやすい日本語に翻訳
+   - 専門用語の適切な日本語化
+   - 元の情報構造を保持しながら、可読性を向上
+
+2. **JSON レポート強化** (`enhance_json_report`)
+   - JSON の各フィールドを改善
+   - 複雑な発言内容を簡潔にまとめた日本語要約を追加
+   - プログラマティックアクセス可能なまま日本語対応
+
+### 生成されるファイル
+
+```bash
+reports/
+├── investment_decision_YYYYMMDD_HHMMSS.txt        # 元のテキストレポート
+├── investment_decision_YYYYMMDD_HHMMSS.json       # 元の JSON レポート
+├── investment_decision_translated_YYYYMMDD_HHMMSS.txt  # 翻訳済みテキスト
+└── investment_decision_enhanced_YYYYMMDD_HHMMSS.json   # 改良済み JSON
+```
+
+### 使用例
+
+```python
+from src.reporter import MeetingReporter
+
+reporter = MeetingReporter()
+
+# 基本レポート生成
+text_path, json_path = reporter.save_report(debate_history)
+
+# テキストレポートを日本語に翻訳
+text_content = text_path.read_text(encoding="utf-8")
+translated = await reporter.translate_report_to_japanese(text_content)
+translated_path = reporter.save_translated_report(translated)
+
+# JSON レポートを改良
+json_content = json_path.read_text(encoding="utf-8")
+enhanced = await reporter.enhance_json_report(json_content)
+enhanced_path = reporter.save_enhanced_json_report(enhanced)
+```
+
+### 翻訳品質設定
+
+翻訳は以下の設定で行われます：
+- **モデル**: `gemini-2.5-flash-lite`
+- **温度**: 0.3（確定性重視、創造性を低く）
+- **最大トークン**: 2000（テキスト）、3000（JSON）
+
 ## 📊 レポート出力例
 
 ### テキストレポート (`investment_decision_YYYYMMDD_HHMMSS.txt`)
 
 ```
 ================================================================================
-INVESTMENT MEETING REPORT
+投資会議レポート
 ================================================================================
-Date: 2026-01-07 14:30:45
-Case: Evaluate investment in TechCloud Inc.
+日時: 2026-01-07 14:30:45
+案件: TechCloud Inc.
 
-PARTICIPANTS:
+参加者:
   - Growth Investor
   - Value Investor
   - Data Analyst
 
 ================================================================================
-INVESTMENT OPPORTUNITY
+投資案件の概要
 ================================================================================
 Evaluate investment opportunity: TechCloud Inc.
-- Early-stage cloud infrastructure startup (3 years old)
 ...
 
 ================================================================================
-DEBATE TRANSCRIPT
+議論の記録
 ================================================================================
 
-[PHASE 1: INITIAL POSITIONS]
+[フェーズ1: 初期意見]
 
 >>> Growth Investor
 This is a compelling opportunity to capture emerging market share...
@@ -193,24 +246,32 @@ This is a compelling opportunity to capture emerging market share...
 
 ```json
 {
-  "timestamp": "2026-01-07T14:30:45",
-  "investment_case": "...",
-  "participants": ["Growth Investor", "Value Investor", "Data Analyst"],
-  "debate_rounds": [
+  "生成日時": "2026-01-07T14:30:45",
+  "投資案件": "...",
+  "参加者": ["Growth Investor", "Value Investor", "Data Analyst"],
+  "ディベートラウンド": [
     {
-      "round_num": 0,
-      "messages": [
+      "ラウンド番号": 0,
+      "メッセージ": [
         {
-          "agent": "Growth Investor",
-          "philosophy_snippet": "...",
-          "content": "..."
+          "エージェント": "Growth Investor",
+          "投資哲学": "...",
+          "発言内容": "..."
         }
       ]
     }
   ],
-  "final_consensus": "..."
+  "最終合意": "..."
 }
 ```
+
+### 翻訳済みレポート (`investment_decision_translated_YYYYMMDD_HHMMSS.txt`)
+
+自動生成されたテキストレポートを、より自然で読みやすい日本語に翻訳・改善したバージョンです。
+
+### 強化済み JSON (`investment_decision_enhanced_YYYYMMDD_HHMMSS.json`)
+
+各フィールドの日本語翻訳を改善し、より理解しやすくした JSON 形式のレポートです。
 
 ## 🔧 カスタマイズ
 
