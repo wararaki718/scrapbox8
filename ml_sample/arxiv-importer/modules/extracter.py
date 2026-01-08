@@ -1,7 +1,7 @@
-import os
 import requests
 from pathlib import Path
 from pypdf import PdfReader
+
 
 class PaperExtractor:
     """

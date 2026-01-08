@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 from modules.extracter import PaperExtractor
 from modules.generator import CodeGenerator
 
@@ -8,7 +9,8 @@ def get_arxiv_id_from_url(url: str) -> str:
     arXivのURLから論文IDを抽出する。
     例: "https://arxiv.org/abs/1706.03762" -> "1706.03762"
     """
-    return url.split('/')[-1]
+    parsed_url = urlparse(url)
+    return parsed_url.path.split('/')[-1]
 
 def main():
     """
