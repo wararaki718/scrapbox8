@@ -1,22 +1,29 @@
-import ast
+"""Generates PyTorch code from paper text using Google Gemini API."""
 
-import google.generativeai as genai
+import ast
+from typing import Optional
+
+import google.genai as genai
 
 
 class CodeGenerator:
-    """
-    抽出された論文テキストからPyTorchモデルコードを生成するクラス。
-    """
-    def __init__(self, api_key: str):
+    """抽出された論文テキストからPyTorchモデルコードを生成するクラス."""
+
+    def __init__(self, api_key: str) -> None:
+        """Initialize CodeGenerator.
+
+        Args:
+            api_key: Google APIキー.
+
+        """
         if not api_key:
             raise ValueError("Google API key is required.")
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-2.5-flash-lite')
+        self.client = genai.Client(api_key=api_key)
 
-    def generate_pytorch_module(self, paper_text: str, model_name: str = "MyModel") -> str:
-        """
-        論文のテキストからPyTorchのnn.Moduleを生成する。
-        """
+    def generate_pytorch_module(
+        self, paper_text: str, model_name: str = "MyModel"
+    ) -> Optional[str]:
+        """論文のテキストからPyTorchのnn.Moduleを生成します."""
         system_prompt = """
         あなたは深層学習の論文を即座にコードに変換するシニアリサーチエンジニアです。
         論文中の数式、図、文章で説明されているモデルアーキテクチャを
@@ -50,18 +57,16 @@ class CodeGenerator:
 
         try:
             print("Generating PyTorch code from paper text...")
-            response = self.model.generate_content(
-                [system_prompt, prompt],
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.1, # 再現性を高めるために低めに設定
-                )
+            response = self.client.models.generate_content(
+                model="gemini-2.5-flash-lite",
+                contents=system_prompt + "\n" + prompt,
             )
 
             # ```python ... ``` の中身を抽出
             res_text = response.text
-            if not isinstance(res_text, str):
-                print("Error: Model response text is not a string.")
-                return ""
+            if res_text is None:
+                print("Error: Model response text is None.")
+                return None
 
             code = res_text.strip()
             if code.startswith("```python"):
@@ -73,12 +78,10 @@ class CodeGenerator:
             return code.strip()
         except Exception as e:
             print(f"An error occurred during code generation: {e}")
-            return ""
+            return None
 
     def validate_syntax(self, code: str) -> bool:
-        """
-        生成されたPythonコードの構文が正しいかチェックする。
-        """
+        """生成されたPythonコードの構文が正しいかチェックします."""
         if not code:
             return False
         try:

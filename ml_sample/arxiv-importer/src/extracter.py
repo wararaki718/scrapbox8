@@ -5,10 +5,15 @@ from pypdf import PdfReader
 
 
 class PaperExtractor:
-    """
-    arXivから論文をダウンロードし、テキストコンテンツを抽出するクラス。
-    """
-    def __init__(self, download_dir: Path = Path("downloads")):
+    """arXivから論文をダウンロードし、テキストコンテンツを抽出するクラス."""
+
+    def __init__(self, download_dir: Path = Path("downloads")) -> None:
+        """Initialize PaperExtractor.
+
+        Args:
+            download_dir: PDFを保存するディレクトリ.
+
+        """
         self.download_dir = download_dir
         self.headers = {
             "User-Agent": (
@@ -19,8 +24,8 @@ class PaperExtractor:
         self.download_dir.mkdir(parents=True, exist_ok=True)
 
     def download_from_arxiv(self, arxiv_id: str) -> Path | None:
-        """
-        arXiv IDからPDFをダウンロードする。
+        """arXiv IDからPDFをダウンロードします.
+
         URLは https://arxiv.org/pdf/{arxiv_id}.pdf の形式。
         """
         pdf_url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
@@ -32,10 +37,12 @@ class PaperExtractor:
 
         try:
             print(f"Downloading PDF from: {pdf_url}")
-            response = requests.get(pdf_url, headers=self.headers, stream=True, timeout=60)
+            response = requests.get(
+                pdf_url, headers=self.headers, stream=True, timeout=60
+            )
             response.raise_for_status()
 
-            with open(save_path, 'wb') as f:
+            with open(save_path, "wb") as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
 
@@ -46,8 +53,8 @@ class PaperExtractor:
             return None
 
     def extract_text_from_pdf(self, pdf_path: Path) -> str:
-        """
-        PDFファイルからテキストを抽出する。
+        """PDFファイルからテキストを抽出します.
+
         数式や特殊な記号の扱いは限定的であることに注意。
         """
         if not pdf_path.exists():

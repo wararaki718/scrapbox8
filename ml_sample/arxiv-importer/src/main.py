@@ -1,35 +1,55 @@
+"""arXiv論文からPyTorchコードを生成するメイン処理."""
+
 import os
 from pathlib import Path
+from typing import Optional
 from urllib.parse import urlparse
-from modules.extracter import PaperExtractor
-from modules.generator import CodeGenerator
+
+from src.extracter import PaperExtractor
+from src.generator import CodeGenerator
+
 
 def get_arxiv_id_from_url(url: str) -> str:
-    """
-    arXivのURLから論文IDを抽出する。
+    """arXivのURLから論文IDを抽出します.
+
     例: "https://arxiv.org/abs/1706.03762" -> "1706.03762"
     """
     parsed_url = urlparse(url)
-    return parsed_url.path.split('/')[-1]
+    return parsed_url.path.split("/")[-1]
 
-def main():
-    """
-    メイン処理：arXiv論文からPyTorchコードを生成する。
-    """
+
+def main() -> None:
+    """メイン処理：arXiv論文からPyTorchコードを生成します."""
+    import sys
+
     # 1. APIキーの設定
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key: Optional[str] = os.getenv("GEMINI_API_KEY")
     if not api_key:
         print("Error: GEMINI_API_KEY environment variable not set.")
         return
 
     # 2. ユーザーからarXivのURLを入力
-    arxiv_url = input("Enter the arXiv paper URL (e.g., https://arxiv.org/abs/1706.03762): ")
+    if sys.stdin.isatty():
+        arxiv_url: str = input(
+            "Enter the arXiv paper URL (e.g., https://arxiv.org/abs/1706.03762): "
+        )
+    else:
+        # Non-interactive mode: read from stdin or use default
+        try:
+            arxiv_url = sys.stdin.readline().strip()
+            if not arxiv_url:
+                print("No URL provided. Exiting.")
+                return
+        except EOFError:
+            print("No URL provided. Exiting.")
+            return
+
     if not arxiv_url:
         print("No URL provided. Exiting.")
         return
 
     arxiv_id = get_arxiv_id_from_url(arxiv_url)
-    
+
     # 3. 論文のダウンロードとテキスト抽出
     download_dir = Path("downloads")
     output_dir = Path("generated_models")
