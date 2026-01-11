@@ -36,6 +36,7 @@ class InvestmentAgent:
         self.name = name
         self.philosophy = philosophy
         self.model_name = model_name
+        # Using a single client instance, but we will use the async interface
         self.client: Any = genai.Client()
         self.conversation_history: list[str] = []
 
@@ -59,7 +60,11 @@ class InvestmentAgent:
 Your role is to provide investment analysis based on your specific philosophy.
 Be assertive about your viewpoint and don't hesitate to challenge others' logic.
 Focus on your core principles when analyzing investment decisions.
-Always identify specific weaknesses or blind spots in opposing viewpoints.
+
+CRITICAL: You MUST use the provided MCP tools to fetch the latest stock price and news
+for the target ticker before forming your opinion. Your arguments MUST be based on
+FACTS and DATA retrieved from these tools, not on feelings or general knowledge.
+Point out specific weaknesses in others' logic using the retrieved data.
 """
         return base_prompt
 
@@ -67,12 +72,14 @@ Always identify specific weaknesses or blind spots in opposing viewpoints.
         self,
         prompt: str,
         context: str | None = None,
+        tools: list[Any] | None = None,
     ) -> str:
         """Generate response using Gemini model.
 
         Args:
             prompt: Input prompt for the agent
             context: Optional context from other agents
+            tools: Optional tool definitions for Gemini
 
         Returns:
             Generated response
@@ -81,27 +88,31 @@ Always identify specific weaknesses or blind spots in opposing viewpoints.
         if context:
             full_prompt = f"{context}\n\n{prompt}"
 
-        response = await self._call_model(full_prompt)
+        response = await self._call_model(full_prompt, tools)
         self.add_to_history(response)
         return response
 
-    async def _call_model(self, prompt: str) -> str:
-        """Call Gemini model.
+    async def _call_model(self, prompt: str, tools: list[Any] | None = None) -> str:
+        """Call Gemini model with tool support.
 
         Args:
             prompt: Input prompt
+            tools: Optional tools
 
         Returns:
             Model response
         """
         system_prompt = self.get_system_prompt()
         try:
-            response = self.client.models.generate_content(
+            # Use the async client (aio) to support async tool functions
+            response = await self.client.aio.models.generate_content(
                 model=self.model_name,
                 contents=f"{system_prompt}\n\n{prompt}",
                 config={
-                    "max_output_tokens": 500,
-                    "temperature": 0.7,
+                    "tools": tools,
+                    "automatic_function_calling": {"disable": False},
+                    "max_output_tokens": 1000,
+                    "temperature": 0.2,
                 },
             )
             return response.text if response.text else "No response generated"

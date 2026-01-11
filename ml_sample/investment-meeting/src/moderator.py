@@ -1,6 +1,7 @@
 """Moderator for investment meeting with enforced multi-round debate."""
 
 import asyncio
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -36,15 +37,18 @@ class InvestmentMeetingModerator:
         self,
         agents: list[InvestmentAgent],
         investment_case: str,
+        tools: list[Any] | None = None,
     ) -> None:
         """Initialize moderator.
 
         Args:
             agents: List of investment agents to moderate
             investment_case: Description of investment opportunity
+            tools: Optional tool definitions for agents to use
         """
         self.agents = agents
         self.investment_case = investment_case
+        self.tools = tools
         self.debate_history: list[DebateRound] = []
         self.current_round = 0
 
@@ -207,7 +211,7 @@ Keep response under 200 words.
             Agent message object
         """
         context = self._build_context_history(agent.name)
-        response = await agent.generate_response(prompt, context=context)
+        response = await agent.generate_response(prompt, context=context, tools=self.tools)
 
         return AgentMessage(
             agent_name=agent.name,
