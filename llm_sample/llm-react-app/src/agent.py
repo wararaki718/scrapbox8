@@ -1,7 +1,7 @@
 from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
-from .models import get_model
-from .tools.github_tools import get_repository_info, analyze_code_structure
+from models import get_model
+from tools.github_tools import get_repository_info, analyze_code_structure
 
 def get_agent():
     model = get_model()
@@ -14,6 +14,6 @@ def get_agent():
         model, 
         tools=tools, 
         checkpointer=checkpointer,
-        state_modifier=system_prompt
+        prompt=system_prompt
     )
     return agent

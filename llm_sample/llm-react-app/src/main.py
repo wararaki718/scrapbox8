@@ -1,6 +1,3 @@
-import sys
-import os
-
 from agent import get_agent
 
 def main():
