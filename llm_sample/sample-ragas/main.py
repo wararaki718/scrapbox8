@@ -3,7 +3,10 @@ from google import genai  # 最新の google-genai を使用
 from datasets import Dataset
 from ragas import evaluate
 # インポートパスを .collections ではなく .metrics から直接に変更
-from ragas.metrics import Faithfulness, AnswerRelevancy, ContextPrecision, ContextRecall
+from ragas.metrics._faithfulness import Faithfulness
+from ragas.metrics._answer_relevance import AnswerRelevancy
+from ragas.metrics._context_precision import ContextPrecision
+from ragas.metrics._context_recall import ContextRecall
 from ragas.llms import llm_factory
 from ragas.embeddings import GoogleEmbeddings
 
