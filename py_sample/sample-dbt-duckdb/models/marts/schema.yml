@@ -1,0 +1,114 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: order item grain fact table
+    tests:
+      - not_null:
+          column_name: order_item_id
+      - unique:
+          column_name: order_item_id
+    columns:
+      - name: order_id
+        tests:
+          - not_null
+      - name: customer_id
+        tests:
+          - not_null
+      - name: product_id
+        tests:
+          - not_null
+      - name: line_amount
+        tests:
+          - not_null
+
+  - name: dim_customers
+    description: customer dimension with order summary
+    tests:
+      - unique:
+          column_name: customer_id
+      - not_null:
+          column_name: customer_id
+
+  - name: mart_daily_sales
+    description: daily sales mart by region/segment/category
+    columns:
+      - name: order_date
+        tests:
+          - not_null
+      - name: gross_sales
+        tests:
+          - not_null
+
+  - name: mart_weekly_sales
+    description: weekly sales mart by region/segment/category
+    columns:
+      - name: week_start_date
+        tests:
+          - not_null
+      - name: weekly_gross_sales
+        tests:
+          - not_null
+
+  - name: customer_ltv_rank
+    description: customer LTV ranking based on total spend
+    tests:
+      - unique:
+          column_name: customer_id
+      - not_null:
+          column_name: customer_id
+    columns:
+      - name: ltv_rank
+        tests:
+          - not_null
+
+  - name: mart_cancellation_rate
+    description: cancellation rate by day and customer segment
+    columns:
+      - name: order_date
+        tests:
+          - not_null
+      - name: cancellation_rate
+        tests:
+          - not_null
+
+  - name: mart_monthly_sales
+    description: monthly sales mart by region/segment/category
+    columns:
+      - name: month_start_date
+        tests:
+          - not_null
+      - name: monthly_gross_sales
+        tests:
+          - not_null
+
+  - name: mart_customer_rfm
+    description: customer RFM scoring mart
+    tests:
+      - unique:
+          column_name: customer_id
+      - not_null:
+          column_name: customer_id
+    columns:
+      - name: r_score
+        tests:
+          - not_null
+      - name: f_score
+        tests:
+          - not_null
+      - name: m_score
+        tests:
+          - not_null
+
+  - name: mart_retention
+    description: monthly cohort retention mart
+    columns:
+      - name: cohort_month
+        tests:
+          - not_null
+      - name: activity_month
+        tests:
+          - not_null
+      - name: active_customers
+        tests:
+          - not_null

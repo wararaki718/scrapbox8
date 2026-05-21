@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: metric_monthly_growth_rate
+    description: month-over-month revenue growth rate
+    columns:
+      - name: month_start_date
+        tests:
+          - not_null
+      - name: monthly_revenue
+        tests:
+          - not_null
+
+  - name: metric_retention_rate
+    description: retention rate by cohort and activity month
+    columns:
+      - name: cohort_month
+        tests:
+          - not_null
+      - name: activity_month
+        tests:
+          - not_null
+      - name: retention_rate
+        tests:
+          - not_null
+
+  - name: metric_arpu
+    description: average revenue per paying user by month
+    columns:
+      - name: month_start_date
+        tests:
+          - not_null
+      - name: arpu
+        tests:
+          - not_null
