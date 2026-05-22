@@ -1,0 +1,11 @@
+item_id,item_name,category,brand,price,stock,rating,review_count,is_active,created_at
+1001,Wireless Earbuds,Electronics,SoundPeak,5980,120,4.3,842,true,2025-01-15
+1002,Mechanical Keyboard,Electronics,KeyForge,12980,45,4.6,391,true,2024-11-02
+1003,Cotton T-Shirt,Fashion,NovaWear,1990,300,4.1,1250,true,2025-03-08
+1004,Running Shoes,Fashion,StrideX,8980,88,4.5,674,true,2024-09-21
+1005,Stainless Bottle,Home,DailyNest,2480,160,4.4,529,true,2025-02-10
+1006,Desk Lamp,Home,LumenLite,3480,72,4.2,287,true,2024-12-19
+1007,Protein Bar 12-Pack,Food,FuelUp,2380,210,4.0,945,true,2025-04-01
+1008,Organic Coffee Beans 1kg,Food,RoastField,3680,54,4.7,318,true,2024-10-05
+1009,Facial Cleanser 200ml,Beauty,PureSkin,1780,0,4.3,1102,false,2025-01-28
+1010,Phone Case,Accessories,GripMate,1580,190,4.1,763,true,2025-03-25
