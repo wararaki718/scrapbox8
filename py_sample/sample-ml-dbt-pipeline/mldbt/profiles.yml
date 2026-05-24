@@ -1,0 +1,8 @@
+mldbt:
+  target: dev
+
+  outputs:
+    dev:
+      type: duckdb
+      path: ../warehouse/ml.duckdb
+      threads: 4

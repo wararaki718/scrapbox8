@@ -1,0 +1,3 @@
+logs
+warehouse/*.duckdb
+models/*.pkl
