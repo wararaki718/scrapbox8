@@ -1,0 +1,5 @@
+data/raw/*.json
+data/processed/*.parquet
+logs
+warehouse/*.duckdb
+models/*.pkl
